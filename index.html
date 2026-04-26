@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Spinner Game</title>
+  <style>
+    body { font-family: Arial; text-align: center; margin-top: 50px; }
+    #game, #admin { display: none; }
+  </style>
+</head>
+<body>
+
+<h1>🎯 Spinner Game</h1>
+
+<div>
+  <input id="username" placeholder="Username">
+  <input id="password" type="password" placeholder="Password">
+  <button onclick="login()">Login / Signup</button>
+</div>
+
+<h3 id="info"></h3>
+
+<div id="game">
+  <h2 id="points"></h2>
+  <button onclick="spin()">Spin</button>
+  <p id="result"></p>
+</div>
+
+<div id="admin">
+  <h2>Admin Panel</h2>
+  <input id="target" placeholder="Username">
+  <input id="pts" placeholder="Points">
+  <button onclick="givePoints()">Give Points</button>
+</div>
+
+<script>
+let currentUser = null;
+
+// Load user
+function login() {
+  let u = username.value;
+  let p = password.value;
+
+  let user = JSON.parse(localStorage.getItem(u));
+
+  if (!user) {
+    user = { password: p, points: 0, plays: 0, role: "player" };
+
+    // first user becomes admin
+    if (!localStorage.getItem("admin")) {
+      user.role = "admin";
+      localStorage.setItem("admin", u);
+    }
+
+    localStorage.setItem(u, JSON.stringify(user));
+  }
+
+  if (user.password !== p) {
+    alert("Wrong password");
+    return;
+  }
+
+  currentUser = u;
+  info.innerText = "Welcome " + u;
+
+  updateUI();
+}
+
+// Update UI
+function updateUI() {
+  let user = JSON.parse(localStorage.getItem(currentUser));
+
+  points.innerText = "Points: " + user.points;
+  game.style.display = "block";
+
+  if (user.role === "admin") {
+    admin.style.display = "block";
+  }
+}
+
+// Spin
+function spin() {
+  let user = JSON.parse(localStorage.getItem(currentUser));
+
+  if (user.plays >= 2) {
+    alert("No spins left");
+    return;
+  }
+
+  user.plays++;
+
+  let num = Math.floor(Math.random() * 10);
+  result.innerText = "You got: " + num;
+
+  if (num === 7) user.points += 10;
+
+  localStorage.setItem(currentUser, JSON.stringify(user));
+  updateUI();
+}
+
+// Admin give points
+function givePoints() {
+  let t = target.value;
+  let p = parseInt(pts.value);
+
+  let user = JSON.parse(localStorage.getItem(t));
+  if (!user) return alert("User not found");
+
+  user.points += p;
+  localStorage.setItem(t, JSON.stringify(user));
+}
+</script>
+
+</body>
+</html>
